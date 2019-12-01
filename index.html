@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>inequality model</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+</head>
+
+<body>
+  <div class="container">
+
+    <div class="columns">
+      <div class="field column">
+        <label class="label">Agent count:</label>
+        <div class="control">
+          <input class="input" type="number" id="agentCountInput">
+        </div>
+      </div>
+      <div class="field column">
+        <label class="label">Initial wealth:</label>
+        <div class="control">
+          <input class="input" type="number" id="initialWealthInput">
+        </div>
+      </div>
+      <div class="field column">
+        <label class="label">Reward rate:</label>
+        <div class="control">
+          <input class="input" type="number" id="rewardRateInput">
+        </div>
+      </div>
+      <div class="field column">
+        <label class="label">Penalty rate:</label>
+        <div class="control">
+          <input class="input" type="number" id="penaltyRateInput">
+        </div>
+      </div>
+      <div class="field column">
+        <label class="label">Rounds:</label>
+        <div class="control">
+          <input class="input" type="number" id="roundsInput">
+        </div>
+      </div>
+    </div>
+
+    <div class="columns">
+      <div class="field is-grouped column">
+        <div class="control">
+          <button class="button is-link" onclick="runSimulation()">Run</button>
+        </div>
+      </div>
+      <div class="field is-grouped column">
+        <div class="control">
+          <button class="button is-link" onclick="resetSimulation()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <code id="simulationParamsOutput"></code>
+  </div>
+
+
+  <div id="my_dataviz"></div>
+
+
+  <div>
+    <div id="logOutput">
+    </div>
+  </div>
+
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="src/main.js"></script>
+</body>
+
+</html>
