@@ -3,6 +3,8 @@
 
 <head>
   <meta charset="utf-8">
+  <meta name="description" content="a visualization of yard sale model">
+  <meta name="keywords" content="inequality, model, yard sale model">
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <title>inequality model</title>
@@ -11,7 +13,20 @@
 
 <body>
   <div class="container">
+    <div class="content">
+      <h1>Is Inequality Inevitable?</h1>
+      <p>This page shows a model mentioned in <a href="https://www.scientificamerican.com/article/is-inequality-inevitable/" target="_blank">Is Inequality Inevitable?</a>. Quote: </p>
+      <blockquote>
+          If you simulate this economy, a variant of the yard sale model, you will get a remarkable result: after a large number of transactions, one agent ends up as an “oligarch” holding practically all the wealth of the economy, and the other 999 end up with virtually nothing. It does not matter how much wealth people started with. It does not matter that all the coin flips were absolutely fair.
+      </blockquote>
+      <p>
+        Try to click "Run" multiple times to observe wealth to concerntrate to a few people. 
+      </p>
+    </div>
+  </div>
 
+
+  <div class="container">
     <div class="columns">
       <div class="field column">
         <label class="label">Agent count:</label>
@@ -59,20 +74,33 @@
     </div>
   </div>
 
-  <div>
+  <div class="container">
     <code id="simulationParamsOutput"></code>
   </div>
 
+  <div class="container">
+    <div class="columns">
+      <div class="column">
+        <canvas id="piechartVis"></canvas>
+      </div>
 
-  <div id="my_dataviz"></div>
+      <div class="column">
+        <canvas id="barchartVis"></canvas>
+      </div>
 
+    </div>
+  </div>
 
-  <div>
+  <div class="container">
+    <h1>logs</h1>
     <div id="logOutput">
     </div>
   </div>
 
-  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"
+    crossorigin="anonymous"></script>
+  <script src="src/simulation.js"></script>
+  <script src="src/charts.js"></script>
   <script src="src/main.js"></script>
 </body>
 

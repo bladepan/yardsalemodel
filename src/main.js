@@ -1,124 +1,3 @@
-class Agent {
-    constructor(name, wealth) {
-        this.name = name;
-        this.wealth = wealth;
-    }
-
-    trade(agent, rewardRate, penaltyRate) {
-        let richPerson = this;
-        let poorPerson = agent;
-        if (this.wealth < agent.wealth) {
-            richPerson = agent;
-            poorPerson = this;
-        }
-
-        const rand = Math.random();
-        const poorWin = rand < 0.5;
-
-        if (poorWin) {
-            const delta = poorPerson.wealth * rewardRate;
-            richPerson.transferWealth(poorPerson, delta);
-        } else {
-            const delta = poorPerson.wealth * penaltyRate;
-            poorPerson.transferWealth(richPerson, delta);
-        }
-    }
-
-    transferWealth(agent, delta) {
-        this.decreaseWealth(delta);
-        agent.increaseWealth(delta);
-    }
-
-    increaseWealth(delta) {
-        this.wealth += delta;
-    }
-
-    decreaseWealth(delta) {
-        this.wealth -= delta;
-    }
-}
-
-class SocietyReportData {
-    constructor() {
-        this.time = 0;
-        this.richest = null;
-        this.poorest = null;
-        this.medium = null;
-        this.top = [];
-        this.bottom = [];
-    }
-}
-
-class Society {
-    constructor(agentCount, initialWealth, rewardRate, penaltyRate) {
-        this.agentCount = agentCount;
-        this.agents = [];
-        for (let i = 0; i < agentCount; i++) {
-            this.agents.push(new Agent(`agent${i}`, initialWealth));
-        }
-        this.sortedAgents = this.agents.map(i => i);
-        this.rewardRate = rewardRate;
-        this.penaltyRate = penaltyRate;
-        this.time = 0;
-    }
-
-    trade() {
-        let index1 = 0;
-        let index2 = 0;
-        while (index1 === index2) {
-            index1 = parseInt(Math.random() * this.agentCount);
-            index2 = parseInt(Math.random() * this.agentCount);
-        }
-        this.agents[index1].trade(this.agents[index2], this.rewardRate, this.penaltyRate);
-        this.time++;
-    }
-
-    sortAgents() {
-        this.sortedAgents.sort((a, b) => {
-            const delta = a.wealth - b.wealth;
-            if (delta === 0) {
-                return 0;
-            }
-
-            return delta > 0 ? 1 : -1;
-        });
-    }
-
-    report() {
-        const data = new SocietyReportData();
-        data.time = this.time;
-        data.poorest = this.sortedAgents[0];
-        data.richest = this.sortedAgents[this.agentCount - 1];
-
-        const count = 10;
-        for (let i = 0; i < count; i++) {
-            const agent = this.sortedAgents[i];
-            data.top.push(agent);
-        }
-
-        const mediumAgent = this.sortedAgents[parseInt(this.agentCount/2)];
-        data.medium = mediumAgent;
-
-        for (let i = this.agentCount - 1; i >= this.agentCount - count; i--) {
-            const agent = this.sortedAgents[i];
-            data.bottom.push(agent);
-        }
-
-        return data;
-    }
-}
-
-// const society = new Society(1000, 1000, 0.2, 0.17);
-
-// for (let i = 0; i < 1000000; i++) {
-//     society.trade();
-//     if (i % 1000 === 0) {
-//         society.sortAgents();
-//         console.log(i);
-//         society.report();
-//     }
-// }
-
 class SimulationParams {
     constructor() {
         this.initialWealth = 1000;
@@ -172,7 +51,7 @@ class UiLogger {
             }
         } else {
             const newEle = this.newChildEle(logObj);
-            if(this.ele.firstChild) {
+            if (this.ele.firstChild) {
                 this.ele.insertBefore(newEle, this.ele.firstChild)
             } else {
                 this.ele.appendChild(newEle);
@@ -199,6 +78,8 @@ class UiController {
         this.penaltyRateInput = new UiInput('penaltyRateInput');
         this.roundsInput = new UiInput('roundsInput');
         this.logger = new UiLogger('logOutput');
+        this.pieChartController = new PieChartVisController('piechartVis', 'Top 10 richest people wealth');
+        this.barChartController = new BarChartController('barchartVis', 'Wealth comparison');
         this.reset();
     }
 
@@ -217,6 +98,7 @@ class UiController {
             this.society = new Society(data.agentCount, data.initialWealth, data.rewardRate, data.penaltyRate);
             this.printSimulationParamsOutput(data);
         }
+        
         const rounds = this.roundsInput.getIntValue();
         this.logger.log(`Run simulation for ${rounds} rounds.`);
         let logStep = parseInt(rounds / 100);
@@ -231,13 +113,38 @@ class UiController {
             }
         }
 
-        this.logSimulationProgress();
+        const result = this.logSimulationProgress();
+        this.renderCharts(result);
+    }
+
+    renderCharts(reportData) {
+        let topStats = new AgentStats(reportData.top);
+        
+        const othersWealth = this.society.totoalWealth - topStats.sum;
+
+        this.pieChartController.setData([{
+            title: `top ${reportData.top.length} wealthiest people`,
+            val: topStats.sum
+        }, {
+            title: `other ${this.society.agentCount - reportData.top.length} people`,
+            val: othersWealth
+        }]);
+
+        const bottomStats = new AgentStats(reportData.bottom);
+        this.barChartController.setData([
+            {title: 'wealthiest', val: reportData.max.wealth},
+            {title: `top ${reportData.top.length} average`, val: topStats.avg},
+            {title: 'medium', val: reportData.medium.wealth},
+            {title: `bottom ${reportData.bottom.length} average`, val: bottomStats.avg},
+            {title: 'poorest', val: reportData.min.wealth}
+        ]);
     }
 
     logSimulationProgress() {
         this.society.sortAgents();
         const data = this.society.report();
         this.logger.log(JSON.stringify(data, 2));
+        return data;
     }
 
     printSimulationParamsOutput(data) {
@@ -251,7 +158,7 @@ class UiController {
         this.initialWealthInput.setValue(data.initialWealth);
         this.rewardRateInput.setValue(data.rewardRate);
         this.penaltyRateInput.setValue(data.penaltyRate);
-        this.roundsInput.setValue(1000000);
+        this.roundsInput.setValue(10000);
         this.printSimulationParamsOutput(data);
     }
 }
@@ -265,48 +172,3 @@ function runSimulation() {
 function resetSimulation() {
     controller.reset();
 }
-
-
-// set the dimensions and margins of the graph
-var width = 450
-height = 450
-margin = 40
-
-// The radius of the pieplot is half the width or half the height (smallest one). I subtract a bit of margin.
-var radius = Math.min(width, height) / 2 - margin
-
-// append the svg object to the div called 'my_dataviz'
-var svg = d3.select("#my_dataviz")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .append("g")
-    .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-
-// Create dummy data
-var data = { a: 9, b: 20, c: 30, d: 8, e: 12 }
-
-// set the color scale
-var color = d3.scaleOrdinal()
-    .domain(data)
-    .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56"])
-
-// Compute the position of each group on the pie:
-var pie = d3.pie()
-    .value(function (d) { return d.value; })
-var data_ready = pie(d3.entries(data))
-
-// Build the pie chart: Basically, each part of the pie is a path that we build using the arc function.
-svg
-    .selectAll('whatever')
-    .data(data_ready)
-    .enter()
-    .append('path')
-    .attr('d', d3.arc()
-        .innerRadius(0)
-        .outerRadius(radius)
-    )
-    .attr('fill', function (d) { return (color(d.data.key)) })
-    .attr("stroke", "black")
-    .style("stroke-width", "2px")
-    .style("opacity", 0.7)
